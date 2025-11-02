@@ -87,7 +87,7 @@ namespace Revision.LINQ
             // Kiểm tra và tạo database
             if (!DatabaseHelper.EnsureDatabaseCreated())
             {
-                Console.WriteLine("\n⏭️  Bỏ qua demo LINQ to Entities (chưa có database)");
+                Console.WriteLine("\n  Bỏ qua demo LINQ to Entities (chưa có database)");
                 Console.WriteLine("Xem code ví dụ bên dưới:\n");
                 ShowEntityFrameworkExample();
                 return;

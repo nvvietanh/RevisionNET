@@ -15,7 +15,7 @@ dotnet build
 Write-Host ""
 
 Write-Host "[3/4] Tạo Migration..." -ForegroundColor Yellow
-dotnet ef migrations add InitialCreate --force
+dotnet ef migrations add InitialCreate
 Write-Host ""
 
 Write-Host "[4/4] Tạo Database và Seed data..." -ForegroundColor Yellow
