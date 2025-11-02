@@ -98,12 +98,126 @@ namespace Revision.LINQ
             Console.WriteLine();
 
             Console.WriteLine("=================================================");
+            Console.WriteLine("BÀI TOÁN 4: Thống kê theo danh mục (CÁCH TRUYỀN THỐNG)");
+            Console.WriteLine("=================================================");
+            Console.WriteLine("Yêu cầu: Tìm các danh mục có > 2 sản phẩm, lấy top 3 sản phẩm giá cao nhất");
+            Console.WriteLine("         của mỗi danh mục, hiển thị tên và giá khuyến mãi (giảm 10%)");
+            Console.WriteLine();
+            
+            // Bước 1: Nhóm sản phẩm theo danh mục
+            Dictionary<string, List<Product>> nhomTheoDanhMuc = new Dictionary<string, List<Product>>();
+            foreach (var sp in danhSachSanPham)
+            {
+                if (!nhomTheoDanhMuc.ContainsKey(sp.Category))
+                {
+                    nhomTheoDanhMuc[sp.Category] = new List<Product>();
+                }
+                nhomTheoDanhMuc[sp.Category].Add(sp);
+            }
+            
+            // Bước 2: Lọc danh mục có > 2 sản phẩm
+            List<string> danhMucCoNhieuSanPham = new List<string>();
+            foreach (var kvp in nhomTheoDanhMuc)
+            {
+                if (kvp.Value.Count > 2)
+                {
+                    danhMucCoNhieuSanPham.Add(kvp.Key);
+                }
+            }
+            
+            // Bước 3: Với mỗi danh mục, lấy top 3 sản phẩm giá cao nhất
+            foreach (var danhMuc in danhMucCoNhieuSanPham)
+            {
+                Console.WriteLine($"\n[{danhMuc}] - Top 3 sản phẩm:");
+                
+                List<Product> sanPhamTrongDanhMuc = nhomTheoDanhMuc[danhMuc];
+                
+                // Sắp xếp theo giá giảm dần (bubble sort)
+                for (int i = 0; i < sanPhamTrongDanhMuc.Count - 1; i++)
+                {
+                    for (int j = i + 1; j < sanPhamTrongDanhMuc.Count; j++)
+                    {
+                        if (sanPhamTrongDanhMuc[i].Price < sanPhamTrongDanhMuc[j].Price)
+                        {
+                            var temp = sanPhamTrongDanhMuc[i];
+                            sanPhamTrongDanhMuc[i] = sanPhamTrongDanhMuc[j];
+                            sanPhamTrongDanhMuc[j] = temp;
+                        }
+                    }
+                }
+                
+                // Lấy top 3 và tính giá khuyến mãi
+                int dem = 0;
+                foreach (var sp in sanPhamTrongDanhMuc)
+                {
+                    if (dem >= 3) break;
+                    decimal giaKhuyenMai = sp.Price * 0.9m;
+                    Console.WriteLine($"  - {sp.Name}: {sp.Price:N0}₫ -> {giaKhuyenMai:N0}₫ (sau giảm 10%)");
+                    dem++;
+                }
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("=================================================");
+            Console.WriteLine("BÀI TOÁN 5: Tổng giá trị tồn kho (CÁCH TRUYỀN THỐNG)");
+            Console.WriteLine("=================================================");
+            Console.WriteLine("Yêu cầu: Tính tổng giá trị tồn kho (Price * Stock) cho các sản phẩm");
+            Console.WriteLine("         danh mục 'Dien tu', có Stock > 10, sắp xếp theo giá trị giảm dần");
+            Console.WriteLine();
+            
+            // Bước 1: Lọc sản phẩm điện tử có stock > 10
+            List<Product> sanPhamDienTuConNhieu = new List<Product>();
+            foreach (var sp in danhSachSanPham)
+            {
+                if (sp.Category == "Dien tu" && sp.Stock > 10)
+                {
+                    sanPhamDienTuConNhieu.Add(sp);
+                }
+            }
+            
+            // Bước 2: Tính giá trị tồn kho cho mỗi sản phẩm
+            Dictionary<string, decimal> giaTriTonKho = new Dictionary<string, decimal>();
+            foreach (var sp in sanPhamDienTuConNhieu)
+            {
+                decimal giaTriTon = sp.Price * sp.Stock;
+                giaTriTonKho[sp.Name] = giaTriTon;
+            }
+            
+            // Bước 3: Sắp xếp theo giá trị tồn kho giảm dần
+            List<KeyValuePair<string, decimal>> danhSachSapXep = new List<KeyValuePair<string, decimal>>(giaTriTonKho);
+            for (int i = 0; i < danhSachSapXep.Count - 1; i++)
+            {
+                for (int j = i + 1; j < danhSachSapXep.Count; j++)
+                {
+                    if (danhSachSapXep[i].Value < danhSachSapXep[j].Value)
+                    {
+                        var temp = danhSachSapXep[i];
+                        danhSachSapXep[i] = danhSachSapXep[j];
+                        danhSachSapXep[j] = temp;
+                    }
+                }
+            }
+            
+            // Bước 4: Tính tổng và hiển thị
+            decimal tongGiaTriTonKho = 0;
+            Console.WriteLine("Chi tiết giá trị tồn kho:");
+            foreach (var kvp in danhSachSapXep)
+            {
+                Console.WriteLine($"  - {kvp.Key}: {kvp.Value:N0}₫");
+                tongGiaTriTonKho += kvp.Value;
+            }
+            Console.WriteLine($"\nTổng giá trị tồn kho: {tongGiaTriTonKho:N0}₫");
+            Console.WriteLine();
+
+            Console.WriteLine("=================================================");
             Console.WriteLine("NHẬN XÉT VỀ CÁCH TRUYỀN THỐNG:");
             Console.WriteLine("=================================================");
             Console.WriteLine("- Code DÀI DÒNG, khó đọc, khó bảo trì");
             Console.WriteLine("- Phải viết NHIỀU vòng lặp, biến tạm, điều kiện");
             Console.WriteLine("- Tập trung vào 'LÀM THẾ NÀO?' (HOW) thay vì 'MUỐN GÌ?' (WHAT)");
             Console.WriteLine("- Dễ gây lỗi logic (quên break, sai điều kiện, ...)");
+            Console.WriteLine("- Với bài toán phức tạp: Code có thể lên đến 50-100 dòng!");
+            Console.WriteLine("- Khó debug, khó test, khó mở rộng");
             Console.WriteLine("\n=> CẦN MỘT CÁCH TỐT HƠN -> LINQ!\n");
         }
     }

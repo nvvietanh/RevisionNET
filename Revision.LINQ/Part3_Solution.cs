@@ -35,6 +35,12 @@ namespace Revision.LINQ
             BaiToan3_KiemTraSanPhamHetHang();
             Console.WriteLine("\n" + new string('=', 80) + "\n");
             
+            BaiToan4_PhanTichPhucTap_ThongKeTheoDanhMuc();
+            Console.WriteLine("\n" + new string('=', 80) + "\n");
+            
+            BaiToan5_ThongKeNangCao_TongGiaTriTonKho();
+            Console.WriteLine("\n" + new string('=', 80) + "\n");
+            
             TongKetSoSanh();
         }
 
@@ -230,6 +236,251 @@ namespace Revision.LINQ
         }
 
         /// <summary>
+        /// BÀI TOÁN 4: Phân tích phức tạp - Thống kê theo danh mục
+        /// SO SÁNH:
+        /// - Lines of Code: Traditional (50+ dòng) vs LINQ (5 dòng với 6 operators chained)
+        /// - Complexity: Traditional phải quản lý Dictionary, List, nhiều vòng lặp
+        /// - LINQ: GroupBy -> Where -> SelectMany -> OrderByDescending -> Take -> Select
+        /// - Đây là ví dụ điển hình của sức mạnh "method chaining" của LINQ!
+        /// </summary>
+        private static void BaiToan4_PhanTichPhucTap_ThongKeTheoDanhMuc()
+        {
+            var danhSachSanPham = GetDanhSachSanPham();
+            
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("  BÀI TOÁN 4: Thống kê theo danh mục");
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("Yêu cầu: Tìm các danh mục có > 2 sản phẩm, lấy top 3 sản phẩm");
+            Console.WriteLine("         giá cao nhất của mỗi danh mục, hiển thị tên và giá");
+            Console.WriteLine("         khuyến mãi (giảm 10%)\n");
+            
+            // ========== CÁCH TRUYỀN THỐNG (TRADITIONAL) ==========
+            Console.WriteLine("--- CÁCH TRUYỀN THỐNG ---");
+            Console.WriteLine("  - Lines of Code: 50+ dòng (Dictionary + nhiều vòng lặp)");
+            Console.WriteLine("  - Time Complexity: O(n × k × log k) - k là số SP/danh mục");
+            Console.WriteLine("  - Space Complexity: O(n) - nhiều cấu trúc dữ liệu tạm");
+            Console.WriteLine("  - Nhược điểm: Cực kỳ dài dòng, khó đọc, dễ lỗi\n");
+            
+            // Code truyền thống (rút gọn để demo)
+            Dictionary<string, List<Product>> nhomTheoDanhMuc = new Dictionary<string, List<Product>>();
+            foreach (var sp in danhSachSanPham)
+            {
+                if (!nhomTheoDanhMuc.ContainsKey(sp.Category))
+                {
+                    nhomTheoDanhMuc[sp.Category] = new List<Product>();
+                }
+                nhomTheoDanhMuc[sp.Category].Add(sp);
+            }
+            
+            List<string> danhMucCoNhieuSanPham = new List<string>();
+            foreach (var kvp in nhomTheoDanhMuc)
+            {
+                if (kvp.Value.Count > 2)
+                {
+                    danhMucCoNhieuSanPham.Add(kvp.Key);
+                }
+            }
+            
+            Console.WriteLine("Kết quả TRADITIONAL:");
+            foreach (var danhMuc in danhMucCoNhieuSanPham)
+            {
+                Console.WriteLine($"\n[{danhMuc}] - Top 3:");
+                
+                List<Product> sanPhamTrongDanhMuc = nhomTheoDanhMuc[danhMuc];
+                
+                // Sắp xếp (bubble sort)
+                for (int i = 0; i < sanPhamTrongDanhMuc.Count - 1; i++)
+                {
+                    for (int j = i + 1; j < sanPhamTrongDanhMuc.Count; j++)
+                    {
+                        if (sanPhamTrongDanhMuc[i].Price < sanPhamTrongDanhMuc[j].Price)
+                        {
+                            var temp = sanPhamTrongDanhMuc[i];
+                            sanPhamTrongDanhMuc[i] = sanPhamTrongDanhMuc[j];
+                            sanPhamTrongDanhMuc[j] = temp;
+                        }
+                    }
+                }
+                
+                int dem = 0;
+                foreach (var sp in sanPhamTrongDanhMuc)
+                {
+                    if (dem >= 3) break;
+                    decimal giaKhuyenMai = sp.Price * 0.9m;
+                    Console.WriteLine($"  {dem + 1}. {sp.Name}: {sp.Price:N0}₫ -> {giaKhuyenMai:N0}₫");
+                    dem++;
+                }
+            }
+            
+            // ========== CÁCH DÙNG LINQ ==========
+            Console.WriteLine("\n\n--- CÁCH DÙNG LINQ ---");
+            Console.WriteLine("  - Lines of Code: 5 dòng (6 operators chained!)");
+            Console.WriteLine("  - Operators: GroupBy -> Where -> SelectMany -> OrderByDescending -> Take -> Select");
+            Console.WriteLine("  - Time Complexity: O(n log n) - tối ưu hơn nhiều");
+            Console.WriteLine("  - Space Complexity: O(k) - chỉ tạo kết quả cuối");
+            Console.WriteLine("  - Ưu điểm: Cực kỳ ngắn gọn, declarative, chainable\n");
+            
+            // Code LINQ - 6 operators chained!
+            var ketQuaLINQ = danhSachSanPham
+                .GroupBy(sp => sp.Category)                              // 1. Nhóm theo danh mục
+                .Where(nhom => nhom.Count() > 2)                         // 2. Lọc danh mục có > 2 SP
+                .SelectMany(nhom => nhom                                 // 3. "Mở phẳng" các nhóm
+                    .OrderByDescending(sp => sp.Price)                   // 4. Sắp xếp giá giảm dần
+                    .Take(3)                                             // 5. Lấy top 3
+                    .Select(sp => new                                    // 6. Chọn dữ liệu cần hiển thị
+                    {
+                        DanhMuc = nhom.Key,
+                        TenSanPham = sp.Name,
+                        GiaGoc = sp.Price,
+                        GiaKhuyenMai = sp.Price * 0.9m
+                    })
+                )
+                .OrderBy(x => x.DanhMuc)
+                .ThenByDescending(x => x.GiaGoc);
+            
+            Console.WriteLine("Code:");
+            Console.WriteLine("  var ketQua = danhSachSanPham");
+            Console.WriteLine("      .GroupBy(sp => sp.Category)              // 1. Nhóm");
+            Console.WriteLine("      .Where(nhom => nhom.Count() > 2)         // 2. Lọc");
+            Console.WriteLine("      .SelectMany(nhom => nhom                 // 3. Mở phẳng");
+            Console.WriteLine("          .OrderByDescending(sp => sp.Price)   // 4. Sắp xếp");
+            Console.WriteLine("          .Take(3)                             // 5. Top 3");
+            Console.WriteLine("          .Select(sp => new { ... })           // 6. Chiếu");
+            Console.WriteLine("      )");
+            Console.WriteLine("      .OrderBy(x => x.DanhMuc)");
+            Console.WriteLine("      .ThenByDescending(x => x.GiaGoc);");
+            
+            Console.WriteLine("\nKết quả LINQ:");
+            string danhMucHienTai = "";
+            int soThuTu = 1;
+            foreach (var item in ketQuaLINQ)
+            {
+                if (item.DanhMuc != danhMucHienTai)
+                {
+                    danhMucHienTai = item.DanhMuc;
+                    soThuTu = 1;
+                    Console.WriteLine($"\n[{item.DanhMuc}] - Top 3:");
+                }
+                Console.WriteLine($"  {soThuTu}. {item.TenSanPham}: {item.GiaGoc:N0}₫ -> {item.GiaKhuyenMai:N0}₫");
+                soThuTu++;
+            }
+            
+            Console.WriteLine("\n>> SO SÁNH: LINQ giảm 90% code, 6 operators chained mượt mà!");
+            Console.WriteLine(">> Đây là sức mạnh thực sự của LINQ - xử lý logic phức tạp trong vài dòng!");
+        }
+
+        /// <summary>
+        /// BÀI TOÁN 5: Thống kê nâng cao - Tổng giá trị tồn kho
+        /// SO SÁNH:
+        /// - Lines of Code: Traditional (40+ dòng) vs LINQ (4 dòng với 5 operators)
+        /// - LINQ Chain: Where -> Select -> OrderByDescending -> Select -> Sum
+        /// - Kết hợp cả aggregation (Sum) và transformation (Select)
+        /// </summary>
+        private static void BaiToan5_ThongKeNangCao_TongGiaTriTonKho()
+        {
+            var danhSachSanPham = GetDanhSachSanPham();
+            
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("  BÀI TOÁN 5: Tổng giá trị tồn kho");
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("Yêu cầu: Tính tổng giá trị tồn kho (Price x Stock) cho các sản phẩm");
+            Console.WriteLine("         danh mục 'Dien tu', có Stock > 10, sắp xếp theo giá trị");
+            Console.WriteLine("         tồn kho giảm dần\n");
+            
+            // ========== CÁCH TRUYỀN THỐNG (TRADITIONAL) ==========
+            Console.WriteLine("--- CÁCH TRUYỀN THỐNG ---");
+            Console.WriteLine("  - Lines of Code: 40+ dòng");
+            Console.WriteLine("  - Time Complexity: O(n²) - filter + sort với bubble sort");
+            Console.WriteLine("  - Space Complexity: O(n) - nhiều List và Dictionary");
+            Console.WriteLine("  - Nhược điểm: Rất dài, nhiều biến tạm, khó maintain\n");
+            
+            // Code truyền thống
+            List<Product> sanPhamDienTuConNhieu = new List<Product>();
+            foreach (var sp in danhSachSanPham)
+            {
+                if (sp.Category == "Dien tu" && sp.Stock > 10)
+                {
+                    sanPhamDienTuConNhieu.Add(sp);
+                }
+            }
+            
+            Dictionary<string, decimal> giaTriTonKho = new Dictionary<string, decimal>();
+            foreach (var sp in sanPhamDienTuConNhieu)
+            {
+                decimal giaTriTon = sp.Price * sp.Stock;
+                giaTriTonKho[sp.Name] = giaTriTon;
+            }
+            
+            List<KeyValuePair<string, decimal>> danhSachSapXep = new List<KeyValuePair<string, decimal>>(giaTriTonKho);
+            for (int i = 0; i < danhSachSapXep.Count - 1; i++)
+            {
+                for (int j = i + 1; j < danhSachSapXep.Count; j++)
+                {
+                    if (danhSachSapXep[i].Value < danhSachSapXep[j].Value)
+                    {
+                        var temp = danhSachSapXep[i];
+                        danhSachSapXep[i] = danhSachSapXep[j];
+                        danhSachSapXep[j] = temp;
+                    }
+                }
+            }
+            
+            decimal tongGiaTriTonKho_Traditional = 0;
+            Console.WriteLine("Kết quả TRADITIONAL:");
+            foreach (var kvp in danhSachSapXep)
+            {
+                Console.WriteLine($"  - {kvp.Key}: {kvp.Value:N0}₫");
+                tongGiaTriTonKho_Traditional += kvp.Value;
+            }
+            Console.WriteLine($"\nTổng giá trị tồn kho: {tongGiaTriTonKho_Traditional:N0}₫");
+            
+            // ========== CÁCH DÙNG LINQ ==========
+            Console.WriteLine("\n--- CÁCH DÙNG LINQ ---");
+            Console.WriteLine("  - Lines of Code: 4 dòng (5 operators chained!)");
+            Console.WriteLine("  - Operators: Where -> Select -> OrderByDescending -> Sum/ToList");
+            Console.WriteLine("  - Time Complexity: O(n log n)");
+            Console.WriteLine("  - Space Complexity: O(k) - deferred execution");
+            Console.WriteLine("  - Ưu điểm: Cực ngắn, rõ ràng, hiệu năng tốt\n");
+            
+            // Code LINQ - 5 operators chained!
+            var chiTietTonKho_LINQ = danhSachSanPham
+                .Where(sp => sp.Category == "Dien tu" && sp.Stock > 10)  // 1. Lọc điều kiện
+                .Select(sp => new                                        // 2. Tính giá trị tồn kho
+                {
+                    TenSanPham = sp.Name,
+                    GiaTriTonKho = sp.Price * sp.Stock,
+                    SoLuong = sp.Stock
+                })
+                .OrderByDescending(x => x.GiaTriTonKho)                  // 3. Sắp xếp
+                .ToList();                                               // 4. Materialize
+            
+            var tongGiaTriTonKho_LINQ = chiTietTonKho_LINQ
+                .Sum(x => x.GiaTriTonKho);                               // 5. Aggregation
+            
+            Console.WriteLine("Code:");
+            Console.WriteLine("  var chiTiet = danhSachSanPham");
+            Console.WriteLine("      .Where(sp => sp.Category == \"Dien tu\" && sp.Stock > 10)");
+            Console.WriteLine("      .Select(sp => new {");
+            Console.WriteLine("          TenSanPham = sp.Name,");
+            Console.WriteLine("          GiaTriTonKho = sp.Price * sp.Stock");
+            Console.WriteLine("      })");
+            Console.WriteLine("      .OrderByDescending(x => x.GiaTriTonKho)");
+            Console.WriteLine("      .ToList();");
+            Console.WriteLine();
+            Console.WriteLine("  var tong = chiTiet.Sum(x => x.GiaTriTonKho);");
+            
+            Console.WriteLine("\nKết quả LINQ:");
+            foreach (var item in chiTietTonKho_LINQ)
+            {
+                Console.WriteLine($"  - {item.TenSanPham}: {item.GiaTriTonKho:N0}₫ (SL: {item.SoLuong})");
+            }
+            Console.WriteLine($"\nTổng giá trị tồn kho: {tongGiaTriTonKho_LINQ:N0}₫");
+            
+            Console.WriteLine("\n>> SO SÁNH: LINQ giảm 90% code, kết hợp mượt mà filter + transform + aggregate!");
+            Console.WriteLine(">> Method chaining giúp logic rõ ràng như đọc tiếng Anh!");
+        }
+
+        /// <summary>
         /// Tổng kết so sánh giữa Traditional và LINQ
         /// </summary>
         private static void TongKetSoSanh()
@@ -255,11 +506,18 @@ namespace Revision.LINQ
             Console.WriteLine("===================================================================");
             Console.WriteLine("  KẾT LUẬN");
             Console.WriteLine("===================================================================");
-            Console.WriteLine("+ LINQ giảm 70-85% số dòng code");
+            Console.WriteLine("+ LINQ giảm 70-90% số dòng code (với bài toán phức tạp có thể đến 95%)");
             Console.WriteLine("+ Dễ đọc, dễ hiểu, dễ bảo trì hơn nhiều");
             Console.WriteLine("+ Hiệu năng tốt hơn với dữ liệu lớn (đặc biệt sorting)");
             Console.WriteLine("+ An toàn kiểu, ít lỗi hơn");
             Console.WriteLine("+ Declarative: Tập trung vào MUỐN GÌ (WHAT) thay vì LÀM THẾ NÀO (HOW)");
+            Console.WriteLine("+ Method Chaining: Kết hợp nhiều operators (3-6+) một cách mượt mà");
+            Console.WriteLine("+ Xử lý logic phức tạp (group, aggregate, transform) trong vài dòng!");
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("\n💡 GHI NHỚ:");
+            Console.WriteLine("  - Bài toán càng phức tạp, LINQ càng thể hiện ưu thế vượt trội");
+            Console.WriteLine("  - Method chaining là sức mạnh cốt lõi: Where -> Select -> OrderBy -> ...");
+            Console.WriteLine("  - Deferred execution giúp tối ưu hiệu năng với IQueryable");
             Console.WriteLine("===================================================================\n");
         }
     }
