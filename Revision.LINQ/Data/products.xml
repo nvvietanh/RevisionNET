@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Products>
+  <Product Id="1">
+    <Name>Laptop Dell XPS 13</Name>
+    <Category>Điện tử</Category>
+    <Price>25000000</Price>
+    <Stock>15</Stock>
+  </Product>
+  <Product Id="2">
+    <Name>iPhone 15 Pro Max</Name>
+    <Category>Điện tử</Category>
+    <Price>30000000</Price>
+    <Stock>8</Stock>
+  </Product>
+  <Product Id="3">
+    <Name>Bàn phím cơ Keychron K2</Name>
+    <Category>Điện tử</Category>
+    <Price>2500000</Price>
+    <Stock>25</Stock>
+  </Product>
+  <Product Id="4">
+    <Name>Chuột Logitech MX Master 3</Name>
+    <Category>Điện tử</Category>
+    <Price>2000000</Price>
+    <Stock>30</Stock>
+  </Product>
+  <Product Id="5">
+    <Name>Sách: Clean Code</Name>
+    <Category>Sách</Category>
+    <Price>250000</Price>
+    <Stock>50</Stock>
+  </Product>
+  <Product Id="6">
+    <Name>Sách: Design Patterns</Name>
+    <Category>Sách</Category>
+    <Price>300000</Price>
+    <Stock>35</Stock>
+  </Product>
+  <Product Id="7">
+    <Name>Tai nghe Sony WH-1000XM5</Name>
+    <Category>Điện tử</Category>
+    <Price>8000000</Price>
+    <Stock>12</Stock>
+  </Product>
+  <Product Id="8">
+    <Name>Màn hình LG 27 inch 4K</Name>
+    <Category>Điện tử</Category>
+    <Price>7500000</Price>
+    <Stock>10</Stock>
+  </Product>
+  <Product Id="9">
+    <Name>Webcam Logitech C920</Name>
+    <Category>Điện tử</Category>
+    <Price>1800000</Price>
+    <Stock>20</Stock>
+  </Product>
+  <Product Id="10">
+    <Name>Sách: Refactoring</Name>
+    <Category>Sách</Category>
+    <Price>280000</Price>
+    <Stock>40</Stock>
+  </Product>
+</Products>

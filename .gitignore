@@ -1,0 +1,34 @@
+# .github
+# Ignore GitHub configuration files
+.github/
+**/.github/
+
+# .vscode
+# Ignore Visual Studio Code configuration files
+.vscode/
+.vs/
+**/.vscode/
+**/.vs/
+
+# bin and obj directories 
+bin/
+obj/
+**/bin/
+**/obj/
+
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Auto-generated files
+
+*.g.cs
+*.g.i.cs
+*.designer.cs
+*.generated.cs
+
+rp/
+**/rp/
